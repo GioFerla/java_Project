@@ -13,8 +13,7 @@ public class Manager extends Dipendente {
 
     @Override
     public void aumentaStipendio(int percentuale){
-        this.stipendio += this.stipendio * percentuale / 100;
-        this.stipendio += 1000;
+        super.aumentaStipendio(super.getStipendio() * percentuale / 100, 1000);
     }
 
     @Override

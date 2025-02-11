@@ -1,10 +1,9 @@
 public class Dipendente {
-  /*utilizzo il modificatore di visibilità protected per rendere accessibili le variabili di istanza anche alle sottoclassi(figli) */
-    protected String nome;
-    protected String cognome;
-    protected int assunzione;
-    protected int stipendio;
-    protected String matricola;
+    private String nome;
+    private String cognome;
+    private int assunzione;
+    private double stipendio;
+    private String matricola;
     public static int matricole = 0;
 
     public Dipendente(String nome, String cognome, int assunzione, int stipendio) {
@@ -20,8 +19,16 @@ public class Dipendente {
         this.stipendio += this.stipendio * percentuale / 100;
     }    
 
+    public void aumentaStipendio(double stipendio, double bonus) {
+        this.stipendio += stipendio + bonus;
+    }
+
+    public double getStipendio() {
+        return this.stipendio;
+    }
+
     @Override
     public String toString() {
-        return "Nome: " + this.nome + "\nCognome: " + this.cognome + "\nAssunzione: " + this.assunzione + "\nStipendio: " + this.stipendio + "\nMatricola: " + this.matricola;
+        return "Nome: " + this.nome + "\nCognome: " + this.cognome + "\nAssunzione: " + this.assunzione + "\nStipendio: " + this.stipendio + "\nMatricola: " + this.matricola + "\n";
     }
 }
