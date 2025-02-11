@@ -1,0 +1,14 @@
+[
+  {
+    "nome": "juventus",
+    "provenienza": "torino",
+    "colore": "bianco e nero",
+    "punti": 3
+  },
+  {
+    "nome": "milan",
+    "provenienza": "milano ",
+    "colore": "rosso e nero",
+    "punti": 0
+  }
+]
