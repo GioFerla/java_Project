@@ -34,20 +34,33 @@ public class cipherGabibbo extends Cifrario {
     @Override
     public String decode() {
         String d = "";
-        
-        // Decifra ogni carattere del testo
+  
         for (int i = 0; i < getTesto().length(); i++) {
             char c = getTesto().charAt(i);
             int index = alph.indexOf(c);
             
             if (index == -1) {
-            d += c;
-            } else {
-            int newIndex = (index - this.key + alph.length()) % alph.length();
-            d += alph.charAt(newIndex);
+                d += c;
+            } else {    
+                int newIndex = (index - this.key + alph.length()) % alph.length();
+                d += alph.charAt(newIndex);
             }
         }
-
-            return d;
+        return d;
     }
-}   
+    public String[] bruteForce(String testo) throws InterruptedException {
+        String[] r = new String[alph.length()];
+        for (int i = 0; i < alph.length(); i++) {
+            this.key = i;
+            r[i] = decode(); 
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+            System.out.println("key[" + i + "]: " + "response: "+ r[i]);
+        }
+        return r;
+    }
+}

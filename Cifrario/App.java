@@ -18,6 +18,7 @@ public class App {
         System.out.println("8. Decode with nonLinearCesar");
         System.out.println("9. Encode with Gabibbo");
         System.out.println("10. Decode with Gabibbo");
+        System.out.println("11. Brute Force Gabibbo");
         System.out.print("Choose: ");
         int operazione = scanner.nextInt();
         scanner.nextLine();
@@ -107,6 +108,16 @@ public class App {
                 chiave = scanner.nextInt();
                 cipherGabibbo cipherGabibboDec = new cipherGabibbo(testo, chiave);
                 System.out.println("Decoded(Gabibbo): " + cipherGabibboDec.decode());
+            }
+            case 11 -> {
+                System.out.print("Enter a string: ");
+                testo = scanner.nextLine();
+                cipherGabibbo cipherGabibboBrute = new cipherGabibbo(testo, 0);
+                try {
+                    String[] bruteForce = cipherGabibboBrute.bruteForce(testo);
+                    
+                } catch (Exception e) {
+                }
             }
             default -> System.out.println("Error: Not a valid input.");
         }
