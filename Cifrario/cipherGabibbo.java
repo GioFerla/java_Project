@@ -8,7 +8,6 @@ public class cipherGabibbo extends Cifrario {
 
     public cipherGabibbo(String testo, int chiave) {
         super(testo, chiave);
-        this.key = chiave;
         }
 
     @Override
@@ -23,7 +22,7 @@ public class cipherGabibbo extends Cifrario {
             if (index == -1) {
                     r += c;
                 } else {
-                    int newIndex = (index + this.key) % alph.length();
+                    int newIndex = (index + super.getChiave()) % alph.length();
                     r += alph.charAt(newIndex);
                     }
         }
@@ -48,13 +47,14 @@ public class cipherGabibbo extends Cifrario {
         }
         return d;
     }
+
     public String[] bruteForce(String testo) throws InterruptedException {
         String[] r = new String[alph.length()];
         for (int i = 0; i < alph.length(); i++) {
-            this.key = i;
+            super.setChiave(i);
             r[i] = decode(); 
             try {
-                Thread.sleep(500);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw e;
