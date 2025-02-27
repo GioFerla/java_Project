@@ -8,6 +8,13 @@ public class Villa extends Appartamento{
         this.mqGiardino = mqGiardino;
         this.piscina = piscina;
         this.piani = piani;
+    }
+
+    public Villa(String codiceAgenzia, String indirizzo, String cap, String citta, String provincia, int superficie, int prezzo, int numeroVani, int numeroBagni, String piano, int mqGiardino, boolean piscina, String piani, String descrizione) {
+        super(codiceAgenzia, indirizzo, cap, citta, provincia, superficie, prezzo, numeroVani, numeroBagni, piano, descrizione);
+        this.mqGiardino = mqGiardino;
+        this.piscina = piscina;
+        this.piani = piani;
     }        
 
     public int getMqGiardino() {

@@ -3,8 +3,17 @@ public class Appartamento extends Immobile {
     private int numeroBagni;
     private String piano;
 
+    //senza descrizione
     public Appartamento(String codiceAgenzia, String indirizzo, String cap, String citta, String provincia, int superficie, int prezzo, int numeroVani, int numeroBagni, String piano) {
         super(codiceAgenzia, indirizzo, cap, citta, provincia, superficie, prezzo);
+        this.numeroVani = numeroVani;
+        this.numeroBagni = numeroBagni;
+        this.piano = piano;
+    }
+    
+    //con descrizione
+    public Appartamento(String codiceAgenzia, String indirizzo, String cap, String citta, String provincia, int superficie, int prezzo, int numeroVani, int numeroBagni, String piano, String descrizione) {
+        super(codiceAgenzia, indirizzo, cap, citta, provincia, superficie, prezzo, descrizione);
         this.numeroVani = numeroVani;
         this.numeroBagni = numeroBagni;
         this.piano = piano;
