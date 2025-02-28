@@ -33,4 +33,9 @@ public class Villa extends Appartamento{
         this.piani = piani;
     }
 
+    public boolean search(String key){
+        return super.getDescrizione().contains(key) || String.valueOf(super.getPrezzo()).contains(key);
+
+    }
+
 }
