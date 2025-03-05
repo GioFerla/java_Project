@@ -1,0 +1,14 @@
+dipendenti:
+Nominativo: mano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 3000, Matricola: A001 - Bonus: 300,00
+Nominativo: pano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 3500, Matricola: A002 - Bonus: 350,00
+
+consulenti:
+Nominativo: cano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 4000 - Bonus: 600,00
+Nominativo: lano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 4500 - Bonus: 675,00
+
+stagisti:
+Nominativo: sano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 1000, Ente Scolastico: IL MAGNIFICO SCHOOL, Ore Formazione: 300 - Bonus: 50,00
+Nominativo: lana, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 1200, Ente Scolastico: LA BRO SCHOOL, Ore Formazione: 600 - Bonus: 60,00
+
+stipendio medio: 2866,67
+lavoratore meno pagato: Nominativo: sano, Codice Fiscale: BDUHG246764ASD7A5, Stipendio: 1000, Ente Scolastico: IL MAGNIFICO SCHOOL, Ore Formazione: 300
