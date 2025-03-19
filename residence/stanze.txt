@@ -1,0 +1,3 @@
+MONOLOCALE: codiceStanza='1', documento Cliente='p', affittata=true, giorni affitto=1, data affitto=2025-03-19}
+BILOCALE: codiceStanza='2', documento Cliente='p', affittata=true, giorni affitto=10, data affitto=2025-03-19}
+MONOLOCALE: codiceStanza='3', documento Cliente='Nessuna', affittata=false, giorni affitto=0, data affitto=Nessuna}
