@@ -6,7 +6,7 @@ public class thread {
 
         try{
             for(int i=0;i<5;i++){
-                System.out.println("ci sto lavorando " + i);
+                System.out.println("ci sto lavorando " + i+1);
                 Thread.sleep(1000);
             }
         }catch(InterruptedException e){
