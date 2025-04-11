@@ -1,4 +1,3 @@
-
 public class InfoAutomobile {
     private String modello;
     private String colore;

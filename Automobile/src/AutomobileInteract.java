@@ -1,3 +1,5 @@
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.*;
 import java.util.Scanner;
 import javax.swing.*;
@@ -12,30 +14,40 @@ public class AutomobileInteract {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
-        System.out.println("Marca dell'automobile: ");
-        String marca = input.nextLine();
+        String[] autoInfo = autoInfo();
+        InfoAutomobile auto = new InfoAutomobile(autoInfo[0], autoInfo[1], autoInfo[2]);
+        boolean scelta = avviaAuto();
 
-        System.out.println("Modello dell'automobile: ");
-        String modello = input.nextLine();
-
-        System.out.println("Colore dell'automobile: ");
-        String colore = input.nextLine();
-
-        InfoAutomobile auto = new InfoAutomobile(modello, colore, marca);
-
-        System.out.println("Vuoi accendere l'automobile? S/N");
-        String scelta = input.nextLine();
-
-        if (scelta.equalsIgnoreCase("S")) {
+        if (scelta) {
             if (auto.accensioneMotore()) {
                 System.out.println("L'automobile è accesa!");
             }
         }
         input.close();
 
-        JFrame frame = new JFrame("Automobile Interact");
+        JFrame frame = new JFrame("Automobile");
         frame.setSize(300, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2, 1));
+
+        JLabel top = new JLabel("Velocità");
+        top.setFont(new Font("Arial", Font.BOLD, 12));
+        top.setHorizontalAlignment(SwingConstants.CENTER);
+        top.setVerticalAlignment(SwingConstants.TOP);
+        panel.add(top);
+
+        JLabel speedLabel = new JLabel("0");
+        speedLabel.setFont(new Font("Arial", Font.BOLD, 60));
+        speedLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(speedLabel);
+
+        top.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0)); 
+        speedLabel.setBorder(BorderFactory.createEmptyBorder(-30, 0, 0, 0));
+
+        frame.add(panel);
+        frame.setVisible(true);
 
         frame.addKeyListener(new KeyAdapter() {
             @Override
@@ -50,8 +62,7 @@ public class AutomobileInteract {
                         public void actionPerformed(ActionEvent e) {
                             auto.accelleraAuto();
                             if (auto.getVelocita() != 707) {
-                                clearScreen();
-                                System.out.println("Velocità attuale: " + auto.getVelocita() + " km/h la marcia inserita è: " + auto.getMarcia());
+                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
                             }
                         }
                     });
@@ -65,12 +76,11 @@ public class AutomobileInteract {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             if (auto.getVelocita() == 0) {
-                                System.out.println("L'auto è ferma");
+                                speedLabel.setText("0 km/h");
                             } else {
                                 auto.decelleraAuto();
-                                clearScreen();
-                                System.out.println("Velocità attuale: " + auto.getVelocita() + " km/h la marcia inserita è: " + auto.getMarcia());
-                            }                            
+                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
+                            }
                         }
                     });
                     timerS.start();
@@ -84,19 +94,16 @@ public class AutomobileInteract {
                     if (timerW != null) {
                         timerW.stop();
                     }
-                    System.out.println("Velocità costante");
                 } else if (e.getKeyChar() == 's') {
                     keyPressedS = false;
                     if (timerS != null) {
                         timerS.stop();
                     }
-                    System.out.println("Velocità costante");
                 }
 
                 if (!keyPressedW && !keyPressedS) {
                     if (auto.getVelocita() == 0) {
-                        clearScreen();
-                        System.out.println("L'auto è ferma");
+                        speedLabel.setText("0 km/h");
                     } else {
                         if (noKeyTimer != null && noKeyTimer.isRunning()) {
                             noKeyTimer.stop();
@@ -106,11 +113,9 @@ public class AutomobileInteract {
                             public void actionPerformed(ActionEvent e) {
                                 if (auto.getVelocita() > 0) {
                                     auto.decelleraAuto();
-                                    clearScreen();
-                                    System.out.println("Velocità attuale: " + auto.getVelocita() + " km/h la marcia inserita è: " + auto.getMarcia());
+                                    speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
                                 } else {
-                                    clearScreen();
-                                    System.out.println("L'auto è ferma");
+                                    speedLabel.setText("0 km/h");
                                     noKeyTimer.stop();
                                 }
                             }
@@ -125,7 +130,82 @@ public class AutomobileInteract {
         frame.setVisible(true);
     }
 
-    private static void clearScreen() {
-        System.out.print("\033[H\033[2J");
+    static public String[] autoInfo(){
+        JFrame info = new JFrame("Inserisci informazioni automobile");
+        info.setSize(500, 300);
+        info.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        info.setLayout(new GridLayout(4, 2));
+
+        JLabel marca = new JLabel("Marca:");
+        JTextField brandField = new JTextField();
+        JLabel modello = new JLabel("Modello:");
+        JTextField modelField = new JTextField();
+        JLabel colorLabel = new JLabel("Colore:");
+        JTextField colorField = new JTextField();
+        JButton Button = new JButton("Conferma");
+
+        info.add(marca);
+        info.add(brandField);
+        info.add(modello);
+        info.add(modelField);
+        info.add(colorLabel);
+        info.add(colorField);
+        info.add(new JLabel());
+        info.add(Button);
+
+        final String[] carInfo = new String[3];
+
+        Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            carInfo[0] = brandField.getText();
+            carInfo[1] = modelField.getText();
+            carInfo[2] = colorField.getText();
+            info.dispose();
+            }
+        });
+
+        info.setVisible(true);
+
+        while (carInfo[0] == null || carInfo[1] == null || carInfo[2] == null) {
+            try {
+            Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            ex.printStackTrace();
+            }
+        }
+
+        return carInfo;
+    }
+
+    static public boolean avviaAuto() {
+        JFrame avvia = new JFrame("Avvia Macchina");
+        avvia.setSize(500, 300);
+        avvia.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JButton Button = new JButton("Avvia");
+        boolean[] result = {false};
+
+        Button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                result[0] = true;
+                avvia.dispose();
+            }
+        });
+
+        avvia.add(Button);
+        avvia.setVisible(true);
+
+        while (!result[0]) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+
+        return result[0];
     }
 }
