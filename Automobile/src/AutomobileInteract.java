@@ -1,7 +1,6 @@
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.*;
-import java.util.Scanner;
 import javax.swing.*;
 
 public class AutomobileInteract {
@@ -10,41 +9,38 @@ public class AutomobileInteract {
     private static Timer timerW;
     private static Timer timerS;
     private static Timer noKeyTimer;
+    private static int maxSpeed = 130;
 
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-
         String[] autoInfo = autoInfo();
         InfoAutomobile auto = new InfoAutomobile(autoInfo[0], autoInfo[1], autoInfo[2]);
-        boolean scelta = avviaAuto();
+        maxSpeed = setMaxSpeed(autoInfo[0]); 
 
-        if (scelta) {
+        if (avviaAuto()) {
             if (auto.accensioneMotore()) {
                 System.out.println("L'automobile è accesa!");
             }
         }
-        input.close();
 
+        createGUI(auto);
+    }
+
+    private static void createGUI(InfoAutomobile auto) {
         JFrame frame = new JFrame("Automobile");
         frame.setSize(300, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(2, 1));
+        JPanel panel = new JPanel(new GridLayout(2, 1));
 
         JLabel top = new JLabel("Velocità");
         top.setFont(new Font("Arial", Font.BOLD, 12));
         top.setHorizontalAlignment(SwingConstants.CENTER);
-        top.setVerticalAlignment(SwingConstants.TOP);
         panel.add(top);
 
-        JLabel speedLabel = new JLabel("0");
+        JLabel speedLabel = new JLabel("0 km/h");
         speedLabel.setFont(new Font("Arial", Font.BOLD, 60));
         speedLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(speedLabel);
-
-        top.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0)); 
-        speedLabel.setBorder(BorderFactory.createEmptyBorder(-30, 0, 0, 0));
 
         frame.add(panel);
         frame.setVisible(true);
@@ -52,160 +48,128 @@ public class AutomobileInteract {
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == 'w' && !keyPressedW) {
-                    keyPressedW = true;
-                    if (noKeyTimer != null) {
-                        noKeyTimer.stop();
-                    }
-                    timerW = new Timer(100, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            auto.accelleraAuto();
-                            if (auto.getVelocita() != 707) {
-                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
-                            }
-                        }
-                    });
-                    timerW.start();
-                } else if (e.getKeyChar() == 's' && !keyPressedS) {
-                    keyPressedS = true;
-                    if (noKeyTimer != null) {
-                        noKeyTimer.stop();
-                    }
-                    timerS = new Timer(100, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            if (auto.getVelocita() == 0) {
-                                speedLabel.setText("0 km/h");
-                            } else {
-                                auto.decelleraAuto();
-                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
-                            }
-                        }
-                    });
-                    timerS.start();
-                }
+                handleKeyPress(e, auto, speedLabel);
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyChar() == 'w') {
-                    keyPressedW = false;
-                    if (timerW != null) {
-                        timerW.stop();
-                    }
-                } else if (e.getKeyChar() == 's') {
-                    keyPressedS = false;
-                    if (timerS != null) {
-                        timerS.stop();
-                    }
-                }
-
-                if (!keyPressedW && !keyPressedS) {
-                    if (auto.getVelocita() == 0) {
-                        speedLabel.setText("0 km/h");
-                    } else {
-                        if (noKeyTimer != null && noKeyTimer.isRunning()) {
-                            noKeyTimer.stop();
-                        }
-                        noKeyTimer = new Timer(900, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                if (auto.getVelocita() > 0) {
-                                    auto.decelleraAuto();
-                                    speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
-                                } else {
-                                    speedLabel.setText("0 km/h");
-                                    noKeyTimer.stop();
-                                }
-                            }
-                        });
-                        noKeyTimer.setRepeats(true);
-                        noKeyTimer.start();
-                    }
-                }
+                handleKeyRelease(e, auto, speedLabel);
             }
         });
-
-        frame.setVisible(true);
     }
 
-    static public String[] autoInfo(){
-        JFrame info = new JFrame("Inserisci informazioni automobile");
+    private static void handleKeyPress(KeyEvent e, InfoAutomobile auto, JLabel speedLabel) {
+        if (e.getKeyChar() == 'w' && !keyPressedW) {
+            keyPressedW = true;
+            stopNoKeyTimer();
+            timerW = new Timer(100, event -> {
+                auto.accelleraAuto(maxSpeed);
+                speedLabel.setText(auto.getVelocita() + " km/h");
+            });
+            timerW.start();
+        } else if (e.getKeyChar() == 's' && !keyPressedS) {
+            keyPressedS = true;
+            stopNoKeyTimer();
+            timerS = new Timer(100, event -> {
+                auto.decelleraAuto();
+                speedLabel.setText(auto.getVelocita() + " km/h");
+            });
+            timerS.start();
+        }
+    }
+
+    private static void handleKeyRelease(KeyEvent e, InfoAutomobile auto, JLabel speedLabel) {
+        if (e.getKeyChar() == 'w') {
+            keyPressedW = false;
+            if (timerW != null) timerW.stop();
+        } else if (e.getKeyChar() == 's') {
+            keyPressedS = false;
+            if (timerS != null) timerS.stop();
+        }
+
+        if (!keyPressedW && !keyPressedS) {
+            startNoKeyTimer(auto, speedLabel);
+        }
+    }
+
+    private static void startNoKeyTimer(InfoAutomobile auto, JLabel speedLabel) {
+        if (noKeyTimer != null && noKeyTimer.isRunning()) {
+            noKeyTimer.stop();
+        }
+        noKeyTimer = new Timer(900, event -> {
+            auto.decelleraAuto();
+            speedLabel.setText(auto.getVelocita() + " km/h");
+            if (auto.getVelocita() <= 0) {
+                noKeyTimer.stop();
+                speedLabel.setText("0 km/h");
+            }
+        });
+        noKeyTimer.setRepeats(true);
+        noKeyTimer.start();
+    }
+
+    private static void stopNoKeyTimer() {
+        if (noKeyTimer != null) {
+            noKeyTimer.stop();
+        }
+    }
+
+    public static String[] autoInfo() {
+        JDialog info = new JDialog((JFrame) null, "Inserisci informazioni automobile", true);
         info.setSize(500, 300);
-        info.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         info.setLayout(new GridLayout(4, 2));
 
-        JLabel marca = new JLabel("Marca:");
         JTextField brandField = new JTextField();
-        JLabel modello = new JLabel("Modello:");
         JTextField modelField = new JTextField();
-        JLabel colorLabel = new JLabel("Colore:");
         JTextField colorField = new JTextField();
-        JButton Button = new JButton("Conferma");
+        JButton confirmButton = new JButton("Conferma");
 
-        info.add(marca);
+        info.add(new JLabel("Marca:"));
         info.add(brandField);
-        info.add(modello);
+        info.add(new JLabel("Modello:"));
         info.add(modelField);
-        info.add(colorLabel);
+        info.add(new JLabel("Colore:"));
         info.add(colorField);
         info.add(new JLabel());
-        info.add(Button);
+        info.add(confirmButton);
 
         final String[] carInfo = new String[3];
-
-        Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        confirmButton.addActionListener(e -> {
             carInfo[0] = brandField.getText();
             carInfo[1] = modelField.getText();
             carInfo[2] = colorField.getText();
             info.dispose();
-            }
         });
 
         info.setVisible(true);
-
-        while (carInfo[0] == null || carInfo[1] == null || carInfo[2] == null) {
-            try {
-            Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            ex.printStackTrace();
-            }
-        }
-
         return carInfo;
     }
 
-    static public boolean avviaAuto() {
-        JFrame avvia = new JFrame("Avvia Macchina");
-        avvia.setSize(500, 300);
-        avvia.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    public static boolean avviaAuto() {
+        JDialog avvia = new JDialog((JFrame) null, "Avvia Macchina", true);
+        avvia.setSize(300, 150);
 
-        JButton Button = new JButton("Avvia");
-        boolean[] result = {false};
+        JButton startButton = new JButton("Avvia");
+        final boolean[] result = {false};
 
-        Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                result[0] = true;
-                avvia.dispose();
-            }
+        startButton.addActionListener(e -> {
+            result[0] = true;
+            avvia.dispose();
         });
 
-        avvia.add(Button);
+        avvia.add(startButton);
         avvia.setVisible(true);
-
-        while (!result[0]) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
-
         return result[0];
+    }
+
+    public static int setMaxSpeed(String marca) {
+        switch (marca.toLowerCase()) {
+            case "fiat": return 130;
+            case "audi": return 150;
+            case "bmw": return 180;
+            case "mercedes": return 200;
+            case "ferrari": return 250;
+            default: return 130;
+        }
     }
 }

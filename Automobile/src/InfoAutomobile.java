@@ -17,8 +17,8 @@ public class InfoAutomobile {
     }
 
     // Metodo per accelerare l'auto
-    public int accelleraAuto() {
-        if (this.velocita <= 130) {
+    public int accelleraAuto(int maxSpeed) {
+        if (this.velocita <= maxSpeed) {
             controlloMarcia();
             return this.velocita+=1;  
         } else {
