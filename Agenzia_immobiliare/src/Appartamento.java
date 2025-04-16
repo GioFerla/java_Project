@@ -40,6 +40,12 @@ public class Appartamento extends Immobile {
 
     @Override
     public String toString() {
-        return "Appartamento [numeroBagni=" + numeroBagni + ", numeroVani=" + numeroVani + ", piano=" + piano + "]";
+        return "Immobile [" +
+                    "indirizzo='" + getIndirizzo() + '\'' +
+                    ", città='" + getCitta() + '\'' +
+                    ", superficie=" + getSuperficie() + " mq" +
+                    ", prezzo=" + getPrezzo() + " eur" +
+                    ", descrizione='" + getDescrizione() + '\'' +
+                    ']';    
     }
 }
