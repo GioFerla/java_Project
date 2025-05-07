@@ -29,6 +29,19 @@ public class TabelloneCalcio extends Tabellone {
         }
     }
 
+    public void assegnaPunti(){
+        if(super.getContatoreCasa().getPunto() > super.getContatoreOspiti().getPunto()){
+            super.getSquadraCasa().vittoria();
+
+        } else if(super.getContatoreCasa().getPunto() < super.getContatoreOspiti().getPunto()){
+                this.getSquadraOspite().vittoria();
+
+                } else if(super.getContatoreCasa().getPunto() == super.getContatoreOspiti().getPunto()){
+                        this.getSquadraCasa().pareggio();
+                        this.getSquadraOspite().pareggio();
+                        }
+    }
+
     @Override
     public void resetGame() {
         super.getContatoreCasa().reset();
