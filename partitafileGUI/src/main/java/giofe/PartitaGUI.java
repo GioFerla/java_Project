@@ -30,12 +30,12 @@ public class PartitaGUI {
         JButton finePartita = new JButton("Fine partita");
 
         aggiungiPuntiCasa.addActionListener(e -> {
-            partita.incrementaCasa();
+            partita.incrementaCasa(1);
             puntiCasa.setText(String.valueOf(partita.getPuntiCasa()));
         });
 
         aggiungiPuntiOspite.addActionListener(e -> {
-            partita.incrementaOspiti();
+            partita.incrementaOspiti(1);
             puntiOspite.setText(String.valueOf(partita.getPuntiOspite()));
         });
 
