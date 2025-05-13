@@ -78,12 +78,16 @@ public class AutomobileInteract {
                             if (auto.getVelocita() == 0) {
                                 speedLabel.setText("0 km/h");
                             } else {
-                                auto.decelleraAuto();
+                                if(auto.decelleraAuto() == 777){
+                                    erroreMarcia();
+                                }
                                 speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
                             }
                         }
                     });
                     timerS.start();
+                } else if(e.getKeyChar() == ' '){
+                    System.out.println(auto.controlloMarciaManuale(true)); 
                 }
             }
 
@@ -207,5 +211,16 @@ public class AutomobileInteract {
         
 
         return result[0];
+    }
+
+    static public void erroreMarcia(){
+        JOptionPane.showMessageDialog(null, "DEVI ABBASSARE LA MARCIA", "ERRORE", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            Thread.sleep(2000);
+            JOptionPane.getRootFrame().dispose();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
     }
 }

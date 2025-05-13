@@ -3,18 +3,18 @@
     "nome": "juventus",
     "provenienza": "torino",
     "colore": "bianco e nero",
+    "punti": 6
+  },
+  {
+    "nome": "inter",
+    "provenienza": "milano",
+    "colore": "nero e blu",
     "punti": 5
   },
   {
     "nome": "milan",
     "provenienza": "torino",
     "colore": "bianco e nero",
-    "punti": 4
-  },
-  {
-    "nome": "inter",
-    "provenienza": "milano",
-    "colore": "nero e blu",
     "punti": 4
   },
   {
@@ -28,5 +28,11 @@
     "provenienza": "napoli",
     "colore": "azzurro",
     "punti": 3
+  },
+  {
+    "nome": "ciso",
+    "provenienza": "c",
+    "colore": "c",
+    "punti": 0
   }
 ]

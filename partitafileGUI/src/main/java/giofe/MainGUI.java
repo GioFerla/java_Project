@@ -163,10 +163,10 @@ public class MainGUI {
     public static boolean verificaSquadra(Campionato campionato, String nome) {
         for (Squadra squadra : campionato.getCampionato()) {
             if (squadra.getNome().equalsIgnoreCase(nome)) {
-                return false; // Squadra already exists
+                return false; 
             }
         }
-        return true; // Squadra does not exist
+        return true; 
     }
 
     public static void verificaDirectory(){
