@@ -6,70 +6,25 @@ import java.util.regex.*;
 
 public class Main {
     public static void main(String[] args) {
-        Agenzia a = new Agenzia("Agenzia", "123");
+        Agenzia agenzia = new Agenzia("Agenzia", "123");
 
         Villa v1 = new Villa("123", "via roma", "00100", "roma", "rm", 100, 130000, 3, 2, "1", 100, true, "2", "lusso moderno");
         Villa v2 = new Villa("124", "via milano", "20100", "milano", "mi", 90, 100000, 2, 1, "2", 80, true, "3", "moderno");
         Villa v3 = new Villa("125", "via napoli", "80100", "napoli", "na", 110, 150000, 4, 3, "3", 120, true, "4", "rustico");
+        Appartamento a = new Appartamento("126", "via torino", "10100", "torino", "to", 80, 80000, 2, 1, "1", "moderno");
+        agenzia.getImmobiliVendita().add(v1);
+        agenzia.getImmobiliVendita().add(v2);
+        agenzia.getImmobiliVendita().add(v3);
+        agenzia.getImmobiliVendita().add(a);
 
-        List<Villa> tutteLeVille = new ArrayList<>();
-        tutteLeVille.add(v1);
-        tutteLeVille.add(v2);
-        tutteLeVille.add(v3);
-
-        String inputUtente = "casa a meno di 170000 euro casa con più di 10 mq";
+        String inputUtente = "casa a meno di 130000 euro casa con più di 10 mq";
         Map<String, List<String>> risultati = estraiParoleChiave(inputUtente);
 
-        List<Villa> villeCompatibili = new ArrayList<>();
-
-        for (Villa villa : tutteLeVille) {
-            boolean soddisfaCondizioni = true;
-
-            for (Map.Entry<String, List<String>> entry : risultati.entrySet()) {
-                String key = entry.getKey();
-                List<String> values = entry.getValue();
-
-                switch (key) {
-                    case "Metri Quadri" -> {
-                        for (String condizione : values) {
-                            int soglia = Integer.parseInt(condizione.substring(1));
-                            if (condizione.startsWith(">") && villa.getSuperficie() <= soglia) {
-                                soddisfaCondizioni = false;
-                            } else if (condizione.startsWith("<") && villa.getSuperficie() >= soglia) {
-                                soddisfaCondizioni = false;
-                            }
-                        }
-                    }
-                    case "Prezzi" -> {
-                        for (String condizione : values) {
-                            int soglia = Integer.parseInt(condizione.substring(1));
-                            if (condizione.startsWith(">") && villa.getPrezzo() <= soglia) {
-                                soddisfaCondizioni = false;
-                            } else if (condizione.startsWith("<") && villa.getPrezzo() >= soglia) {
-                                soddisfaCondizioni = false;
-                            }
-                        }
-                    }
-                    case "Parole Chiave" -> {
-                        for (String parola : values) {
-                            if (!villa.search(parola)) {
-                                soddisfaCondizioni = false;
-                            }
-                        }
-                    }
-                }
-
-                if (!soddisfaCondizioni) break;
-            }
-
-            if (soddisfaCondizioni) {
-                villeCompatibili.add(villa);
-            }
-        }
+        List<Appartamento> appartamentiGood = agenzia.filtraAppartamenti(risultati);
 
         System.out.println("Ville compatibili con la ricerca:");
-        for (Villa villaCompatibile : villeCompatibili) {
-            System.out.println(villaCompatibile);
+        for (Appartamento appartamentoCompatibile : appartamentiGood) {
+            System.out.println(appartamentoCompatibile);
         }
     }
 
@@ -100,12 +55,16 @@ public class Main {
         Matcher matcherParole = patternParole.matcher(testo);
         while (matcherParole.find()) {
             String parola = matcherParole.group(1).toLowerCase();
-            if (parola.equals("lussuosa")) {
-            parola = "lusso";
-            } else if (parola.equals("moderna")) {
-            parola = "moderno";
-            } else if (parola.equals("rustica")) {
-            parola = "rustico";
+            switch (parola) {
+                case "lussuosa":
+                    parola = "lusso";
+                    break;
+                case "moderna":
+                    parola = "moderno";
+                    break;
+                case "rustica":
+                    parola = "rustico";
+                    break;
             }
             paroleChiave.add(parola);
         }
@@ -117,3 +76,4 @@ public class Main {
         return risultati;
     }
 }
+

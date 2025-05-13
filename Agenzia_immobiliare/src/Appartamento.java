@@ -38,9 +38,14 @@ public class Appartamento extends Immobile {
         this.piano = piano;
     }
 
+    public boolean search(String key){
+        return super.getDescrizione().contains(key) || String.valueOf(super.getPrezzo()).contains(key);
+    }
+
     @Override
     public String toString() {
         return "Immobile [" +
+                    "tipo='" + this.getClass().getSimpleName() + "', " +
                     "indirizzo='" + getIndirizzo() + '\'' +
                     ", città='" + getCitta() + '\'' +
                     ", superficie=" + getSuperficie() + " mq" +

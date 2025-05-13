@@ -158,6 +158,7 @@ public class MainGUI {
 
         menuFrame.add(menuPanel);
         menuFrame.setVisible(true);
+
     }
 
     public static boolean verificaSquadra(Campionato campionato, String nome) {

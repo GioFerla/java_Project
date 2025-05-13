@@ -43,5 +43,13 @@ public abstract class Tabellone {
     public Contatore getContatoreOspiti() {
         return this.contatoreOspiti;
     }
+
+    public Squadra getSquadraCasa() {
+        return this.squadraCasa;
+    }
+
+    public Squadra getSquadraOspite() {
+        return this.squadraOspite;
+    }
     
 }
