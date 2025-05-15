@@ -48,35 +48,40 @@ public class AutomobileInteract {
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                handleKeyPress(e, auto, speedLabel);
+                if (e.getKeyChar() == 'w' && !keyPressedW) {
+                    keyPressedW = true;
+                    if (noKeyTimer != null) {
+                        noKeyTimer.stop();
+                    }
+                    timerW = new Timer(100, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            auto.accelleraAuto();
+                            if (auto.getVelocita() != 707) {
+                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
+                            }
+                        }
+                    });
+                    timerW.start();
+                } else if (e.getKeyChar() == 's' && !keyPressedS) {
+                    keyPressedS = true;
+                    if (noKeyTimer != null) {
+                        noKeyTimer.stop();
+                    }
+                    timerS = new Timer(100, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (auto.getVelocita() == 0) {
+                                speedLabel.setText("0 km/h");
+                            } else {
+                                auto.decelleraAuto();
+                                speedLabel.setText(String.valueOf(auto.getVelocita()) + " km/h");
+                            }
+                        }
+                    });
+                    timerS.start();
+                }
             }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                handleKeyRelease(e, auto, speedLabel);
-            }
-        });
-    }
-
-    private static void handleKeyPress(KeyEvent e, InfoAutomobile auto, JLabel speedLabel) {
-        if (e.getKeyChar() == 'w' && !keyPressedW) {
-            keyPressedW = true;
-            stopNoKeyTimer();
-            timerW = new Timer(100, event -> {
-                auto.accelleraAuto(maxSpeed);
-                speedLabel.setText(auto.getVelocita() + " km/h");
-            });
-            timerW.start();
-        } else if (e.getKeyChar() == 's' && !keyPressedS) {
-            keyPressedS = true;
-            stopNoKeyTimer();
-            timerS = new Timer(100, event -> {
-                auto.decelleraAuto();
-                speedLabel.setText(auto.getVelocita() + " km/h");
-            });
-            timerS.start();
-        }
-    }
 
     private static void handleKeyRelease(KeyEvent e, InfoAutomobile auto, JLabel speedLabel) {
         if (e.getKeyChar() == 'w') {
@@ -160,16 +165,5 @@ public class AutomobileInteract {
         avvia.add(startButton);
         avvia.setVisible(true);
         return result[0];
-    }
-
-    public static int setMaxSpeed(String marca) {
-        switch (marca.toLowerCase()) {
-            case "fiat": return 130;
-            case "audi": return 150;
-            case "bmw": return 180;
-            case "mercedes": return 200;
-            case "ferrari": return 250;
-            default: return 130;
-        }
     }
 }
