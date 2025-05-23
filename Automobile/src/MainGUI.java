@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DecimalFormat;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 
 public class MainGUI {
     private static boolean keyPressedW = false;
@@ -8,9 +10,20 @@ public class MainGUI {
     private static Timer timerW;
     private static Timer timerS;
     private static Timer noKeyTimer;
-    private static int maxSpeed = 130;
+    private static JProgressBar speedometer;
+    private static JLabel statusMessage;
+    private static final Color DARK_GREEN = new Color(0, 120, 0);
+    private static final Color DARK_RED = new Color(150, 0, 0);
+    private static final DecimalFormat df = new DecimalFormat("0");
 
     public static void main(String[] args) {
+        try {
+            // Set look and feel to system default
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         String[] autoInfo = autoInfo(); 
         boolean isAutomatica = scegliTipoCambio();
         Auto auto;
@@ -21,43 +34,189 @@ public class MainGUI {
             auto = new AutoManuale(autoInfo[1], autoInfo[2], autoInfo[0]);
         }
 
-        maxSpeed = setMaxSpeed(autoInfo[0]);
-
         if (avviaAuto()) {
             if (auto.accensioneMotore()) {
-                System.out.println("L'automobile è accesa!");
+                createGUI(auto, isAutomatica);
             }
         }
-
-        createGUI(auto, isAutomatica);
     }
 
     private static void createGUI(Auto auto, boolean isAutomatica) {
-        JFrame frame = new JFrame("Simulatore Automobile");
-        frame.setSize(400, 300);
+        // Create main frame
+        JFrame frame = new JFrame("Simulatore Automobile - " + auto.modello);
+        frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout(10, 10));
+        frame.getContentPane().setBackground(new Color(240, 240, 240));
 
-        JPanel panel = new JPanel(new GridLayout(3, 1));
-
-        JLabel top = new JLabel("Velocità");
-        top.setFont(new Font("Arial", Font.BOLD, 14));
-        top.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(top);
-
-        JLabel speedLabel = new JLabel("0 km/h");
-        speedLabel.setFont(new Font("Arial", Font.BOLD, 60));
-        speedLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(speedLabel);
-
-        JLabel gearLabel = new JLabel("Marcia: N");
-        gearLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        gearLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(gearLabel);
-
-        frame.add(panel);
+        // Main panel with speed info
+        JPanel mainPanel = createSpeedPanel(auto);
+        
+        // Control panel with key instructions
+        JPanel controlPanel = createControlPanel(isAutomatica);
+        
+        // Car info panel
+        JPanel infoPanel = createInfoPanel(auto);
+        
+        // Add status message panel
+        statusMessage = new JLabel("L'automobile è accesa!");
+        statusMessage.setFont(new Font("Arial", Font.ITALIC, 12));
+        statusMessage.setHorizontalAlignment(SwingConstants.CENTER);
+        statusMessage.setForeground(DARK_GREEN);
+        
+        // Add panels to frame
+        frame.add(mainPanel, BorderLayout.CENTER);
+        frame.add(controlPanel, BorderLayout.EAST);
+        frame.add(infoPanel, BorderLayout.NORTH);
+        frame.add(statusMessage, BorderLayout.SOUTH);
+        
+        // Add padding around panels
+        ((JComponent) frame.getContentPane()).setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
         frame.setVisible(true);
+        frame.setLocationRelativeTo(null); // Center on screen
         frame.setFocusable(true);
+        frame.requestFocus();
 
+        // Add keyboard listener
+        addKeyboardListener(frame, auto, isAutomatica);
+    }
+    
+    private static JPanel createSpeedPanel(Auto auto) {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(createTitledBorder("Indicatori di Marcia"));
+        
+        // Speed indicator
+        JLabel speedLabel = new JLabel("0");
+        speedLabel.setFont(new Font("Digital-7", Font.BOLD, 90));
+        speedLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        speedLabel.setForeground(new Color(30, 30, 30));
+        
+        JLabel kmhLabel = new JLabel("km/h");
+        kmhLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        kmhLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Speedometer progress bar
+        speedometer = new JProgressBar(0, auto.getMaxSpeed());
+        speedometer.setValue(0);
+        speedometer.setStringPainted(false);
+        speedometer.setForeground(new Color(50, 150, 220));
+        
+        // Gear indicator
+        JLabel gearLabel = new JLabel("N");
+        gearLabel.setFont(new Font("Digital-7", Font.BOLD, 70));
+        gearLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gearLabel.setForeground(new Color(30, 30, 30));
+        gearLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        
+        // Speed panel layout
+        JPanel speedPanel = new JPanel(new BorderLayout());
+        speedPanel.add(speedLabel, BorderLayout.CENTER);
+        speedPanel.add(kmhLabel, BorderLayout.SOUTH);
+        
+        // Add to main panel
+        panel.add(speedPanel, BorderLayout.CENTER);
+        
+        // Gear panel with label
+        JPanel gearPanel = new JPanel(new BorderLayout());
+        JLabel gearTitleLabel = new JLabel("Marcia");
+        gearTitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gearTitleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        gearPanel.add(gearTitleLabel, BorderLayout.NORTH);
+        gearPanel.add(gearLabel, BorderLayout.CENTER);
+        gearPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+        
+        panel.add(gearPanel, BorderLayout.EAST);
+        panel.add(speedometer, BorderLayout.SOUTH);
+        
+        // Update references for key listener
+        Timer guiUpdateTimer = new Timer(100, e -> {
+            int speed = auto.getVelocita();
+            speedLabel.setText(df.format(speed));
+            speedometer.setValue(speed);
+            
+            // Change color based on speed range
+            if (speed > auto.getMaxSpeed() * 0.8) {
+                speedLabel.setForeground(DARK_RED);
+            } else if (speed > auto.getMaxSpeed() * 0.6) {
+                speedLabel.setForeground(new Color(200, 100, 0));
+            } else {
+                speedLabel.setForeground(new Color(30, 30, 30));
+            }
+            
+            // Update gear display
+            String marciaText = marciaToString(auto.getMarcia());
+            gearLabel.setText(marciaText);
+        });
+        guiUpdateTimer.start();
+        
+        return panel;
+    }
+    
+    private static JPanel createControlPanel(boolean isAutomatica) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(createTitledBorder("Comandi"));
+        
+        // Control instructions
+        JLabel acceleraLabel = new JLabel("W - Accelera");
+        JLabel frenaLabel = new JLabel("S - Frena");
+        
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(acceleraLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(frenaLabel);
+        
+        // Add manual transmission controls if needed
+        if (!isAutomatica) {
+            JLabel marciaUpLabel = new JLabel("E - Marcia su");
+            JLabel marciaDownLabel = new JLabel("Q - Marcia giù");
+            
+            panel.add(Box.createVerticalStrut(20));
+            panel.add(marciaUpLabel);
+            panel.add(Box.createVerticalStrut(10));
+            panel.add(marciaDownLabel);
+        } else {
+            JLabel autoLabel = new JLabel("Cambio Automatico");
+            autoLabel.setForeground(new Color(0, 100, 0));
+            panel.add(Box.createVerticalStrut(20));
+            panel.add(autoLabel);
+        }
+        
+        panel.add(Box.createVerticalGlue());
+        return panel;
+    }
+    
+    private static JPanel createInfoPanel(Auto auto) {
+        JPanel panel = new JPanel(new GridLayout(1, 3, 10, 0));
+        panel.setBorder(createTitledBorder("Informazioni Veicolo"));
+        
+        // Car information
+        JLabel brandLabel = new JLabel("Marca: " + auto.marca);
+        JLabel modelLabel = new JLabel("Modello: " + auto.modello);
+        JLabel maxSpeedLabel = new JLabel("Velocità Max: " + auto.getMaxSpeed() + " km/h");
+        
+        panel.add(brandLabel);
+        panel.add(modelLabel);
+        panel.add(maxSpeedLabel);
+        
+        return panel;
+    }
+    
+    private static TitledBorder createTitledBorder(String title) {
+        return BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                title,
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 12),
+                Color.DARK_GRAY);
+    }
+    
+    private static void addKeyboardListener(JFrame frame, Auto auto, boolean isAutomatica) {
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -68,9 +227,17 @@ public class MainGUI {
                     if (noKeyTimer != null) noKeyTimer.stop();
 
                     timerW = new Timer(100, ev -> {
-                        auto.accelleraAuto();
-                        speedLabel.setText(auto.getVelocita() + " km/h");
-                        gearLabel.setText("Marcia: " + marciaToString(auto.getMarcia()));
+                        int result = auto.accelleraAuto();
+                        // Update status message if acceleration failed
+                        if (result == auto.getVelocita()) {
+                            if (auto.getVelocita() >= auto.getMaxSpeed()) {
+                                updateStatus("Velocità massima raggiunta!", DARK_RED);
+                            } else if (auto.getMarcia() == 0) {
+                                updateStatus("Inserisci una marcia per accelerare!", DARK_RED);
+                            }
+                        } else {
+                            updateStatus("Accelerando...", DARK_GREEN);
+                        }
                     });
                     timerW.start();
 
@@ -79,108 +246,216 @@ public class MainGUI {
                     if (noKeyTimer != null) noKeyTimer.stop();
 
                     timerS = new Timer(100, ev -> {
-                        auto.deceleraAuto();
-                        speedLabel.setText(auto.getVelocita() + " km/h");
-                        gearLabel.setText("Marcia: " + marciaToString(auto.getMarcia()));
+                        int result = auto.deceleraAuto();
+                        if (result == 777) {
+                            updateStatus("Velocità troppo bassa per la marcia attuale!", DARK_RED);
+                        } else if (auto.getVelocita() <= 0) {
+                            updateStatus("Auto ferma", Color.BLUE);
+                        } else {
+                            updateStatus("Frenando...", Color.ORANGE);
+                        }
                     });
                     timerS.start();
 
                 } else if (!isAutomatica && (key == 'e' || key == 'q')) {
                     AutoManuale manuale = (AutoManuale) auto;
+                    int result;
                     if (key == 'e') {
-                        manuale.cambioMarcia(true);
+                        result = manuale.cambioMarcia(true);
+                        if (result == 404) {
+                            updateStatus("Non puoi aumentare oltre la 5ª marcia!", DARK_RED);
+                        } else {
+                            updateStatus("Marcia aumentata: " + result, DARK_GREEN);
+                        }
                     } else {
-                        manuale.cambioMarcia(false);
+                        result = manuale.cambioMarcia(false);
+                        if (result == 404) {
+                            updateStatus("Sei già in folle!", DARK_RED);
+                        } else {
+                            String marciaText = result == 0 ? "N" : String.valueOf(result);
+                            updateStatus("Marcia ridotta: " + marciaText, Color.ORANGE);
+                        }
                     }
-                    gearLabel.setText("Marcia: " + marciaToString(auto.getMarcia()));
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                handleKeyRelease(e, auto, speedLabel, gearLabel);
+                handleKeyRelease(e, auto);
             }
         });
     }
 
-    private static void handleKeyRelease(KeyEvent e, Auto auto, JLabel speedLabel, JLabel gearLabel) {
+    private static void handleKeyRelease(KeyEvent e, Auto auto) {
         if (e.getKeyChar() == 'w') {
             keyPressedW = false;
             if (timerW != null) timerW.stop();
+            updateStatus("Rilasciato acceleratore", Color.GRAY);
         } else if (e.getKeyChar() == 's') {
             keyPressedS = false;
             if (timerS != null) timerS.stop();
+            updateStatus("Rilasciato freno", Color.GRAY);
         }
 
         if (!keyPressedW && !keyPressedS) {
-            startNoKeyTimer(auto, speedLabel, gearLabel);
+            startNoKeyTimer(auto);
         }
     }
 
-    private static void startNoKeyTimer(Auto auto, JLabel speedLabel, JLabel gearLabel) {
+    private static void startNoKeyTimer(Auto auto) {
         if (noKeyTimer != null && noKeyTimer.isRunning()) {
             noKeyTimer.stop();
         }
         noKeyTimer = new Timer(900, event -> {
             auto.deceleraAuto();
-            speedLabel.setText(auto.getVelocita() + " km/h");
-            gearLabel.setText("Marcia: " + marciaToString(auto.getMarcia()));
             if (auto.getVelocita() <= 0) {
                 noKeyTimer.stop();
-                speedLabel.setText("0 km/h");
+                updateStatus("Auto ferma", Color.BLUE);
             }
         });
         noKeyTimer.setRepeats(true);
         noKeyTimer.start();
     }
+    
+    private static void updateStatus(String message, Color color) {
+        statusMessage.setText(message);
+        statusMessage.setForeground(color);
+    }
 
     private static String[] autoInfo() {
         JDialog info = new JDialog((JFrame) null, "Inserisci informazioni automobile", true);
         info.setSize(500, 300);
-        info.setLayout(new GridLayout(4, 2));
+        info.setLayout(new GridLayout(4, 2, 10, 10));
+        ((JComponent) info.getContentPane()).setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JTextField brandField = new JTextField();
-        JTextField modelField = new JTextField();
-        JTextField colorField = new JTextField();
+        JTextField brandField = new JTextField("", 15);
+        JTextField modelField = new JTextField("", 15);
+        JTextField colorField = new JTextField("", 15);
         JButton confirmButton = new JButton("Conferma");
+        confirmButton.setBackground(new Color(100, 180, 100));
+        confirmButton.setForeground(Color.WHITE);
 
-        info.add(new JLabel("Marca:"));
+        // Style labels
+        JLabel brandLabel = new JLabel("Marca:");
+        JLabel modelLabel = new JLabel("Modello:");
+        JLabel colorLabel = new JLabel("Colore:");
+        Font labelFont = new Font("Arial", Font.BOLD, 14);
+        brandLabel.setFont(labelFont);
+        modelLabel.setFont(labelFont);
+        colorLabel.setFont(labelFont);
+
+        info.add(brandLabel);
         info.add(brandField);
-        info.add(new JLabel("Modello:"));
+        info.add(modelLabel);
         info.add(modelField);
-        info.add(new JLabel("Colore:"));
+        info.add(colorLabel);
         info.add(colorField);
         info.add(new JLabel());
         info.add(confirmButton);
 
         final String[] carInfo = new String[3];
+        
+        // Pre-populate with suggestions
+        brandField.setText("Audi");
+        modelField.setText("A4");
+        colorField.setText("Nero");
+        
         confirmButton.addActionListener(e -> {
+            // Validate input
+            if (brandField.getText().trim().isEmpty() || 
+                modelField.getText().trim().isEmpty() || 
+                colorField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(info, 
+                    "Tutti i campi sono obbligatori!", 
+                    "Errore", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             carInfo[0] = brandField.getText();
             carInfo[1] = modelField.getText();
             carInfo[2] = colorField.getText();
             info.dispose();
         });
-
+        
+        info.setLocationRelativeTo(null);
         info.setVisible(true);
         return carInfo;
     }
 
     private static boolean scegliTipoCambio() {
-        Object[] options = {"Manuale", "Automatico"};
-        int scelta = JOptionPane.showOptionDialog(null,
-                "Che tipo di cambio vuoi usare?",
-                "Tipo di Cambio",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null, options, options[0]);
-        return scelta == 1; 
+        // Create custom buttons
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        JButton manualeButton = new JButton("Manuale");
+        JButton automaticoButton = new JButton("Automatico");
+        
+        manualeButton.setBackground(new Color(200, 200, 200));
+        automaticoButton.setBackground(new Color(180, 220, 180));
+        
+        buttonPanel.add(manualeButton);
+        buttonPanel.add(automaticoButton);
+        
+        // Dialog content
+        JPanel panel = new JPanel(new BorderLayout(0, 20));
+        JLabel questionLabel = new JLabel("Che tipo di cambio vuoi usare?");
+        questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        panel.add(questionLabel, BorderLayout.NORTH);
+        panel.add(buttonPanel, BorderLayout.CENTER);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Create dialog
+        JDialog dialog = new JDialog((JFrame) null, "Tipo di Cambio", true);
+        dialog.setSize(400, 200);
+        dialog.add(panel);
+        dialog.setLocationRelativeTo(null);
+        
+        // Result holder
+        final boolean[] result = {false}; // Default: manuale
+        
+        // Button actions
+        manualeButton.addActionListener(e -> {
+            result[0] = false;
+            dialog.dispose();
+        });
+        
+        automaticoButton.addActionListener(e -> {
+            result[0] = true;
+            dialog.dispose();
+        });
+        
+        dialog.setVisible(true);
+        return result[0];
     }
 
     private static boolean avviaAuto() {
-        JDialog avvia = new JDialog((JFrame) null, "Avvia Macchina", true);
-        avvia.setSize(300, 150);
-
-        JButton startButton = new JButton("Avvia");
+        JDialog avvia = new JDialog((JFrame) null, "Avvia Automobile", true);
+        avvia.setSize(350, 200);
+        avvia.setLayout(new BorderLayout());
+        
+        // Create animated icon (simplified)
+        JLabel iconLabel = new JLabel(new ImageIcon("car_icon.png"));
+        if (iconLabel.getIcon() == null) {
+            // Fallback if image not found
+            iconLabel.setText("🚗");
+            iconLabel.setFont(new Font("Arial", Font.PLAIN, 48));
+            iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+        
+        JButton startButton = new JButton("Accendi il Motore");
+        startButton.setFont(new Font("Arial", Font.BOLD, 16));
+        startButton.setBackground(new Color(80, 160, 80));
+        startButton.setForeground(Color.WHITE);
+        startButton.setFocusPainted(false);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
+        buttonPanel.add(startButton);
+        
+        avvia.add(iconLabel, BorderLayout.CENTER);
+        avvia.add(buttonPanel, BorderLayout.SOUTH);
+        
         final boolean[] result = {false};
 
         startButton.addActionListener(e -> {
@@ -188,19 +463,9 @@ public class MainGUI {
             avvia.dispose();
         });
 
-        avvia.add(startButton);
+        avvia.setLocationRelativeTo(null);
         avvia.setVisible(true);
         return result[0];
-    }
-
-    private static int setMaxSpeed(String brand) {
-        switch (brand.toLowerCase()) {
-            case "fiat": return 130;
-            case "audi": return 250;
-            case "bmw": return 300;
-            case "mercedes": return 320;
-            default: return 130;
-        }
     }
 
     private static String marciaToString(int marcia) {
