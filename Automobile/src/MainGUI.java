@@ -18,7 +18,6 @@ public class MainGUI {
 
     public static void main(String[] args) {
         try {
-            // Set look and feel to system default
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
@@ -42,67 +41,54 @@ public class MainGUI {
     }
 
     private static void createGUI(Auto auto, boolean isAutomatica) {
-        // Create main frame
         JFrame frame = new JFrame("Simulatore Automobile - " + auto.modello);
         frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
         frame.getContentPane().setBackground(new Color(240, 240, 240));
 
-        // Main panel with speed info
         JPanel mainPanel = createSpeedPanel(auto);
-        
-        // Control panel with key instructions
         JPanel controlPanel = createControlPanel(isAutomatica);
-        
-        // Car info panel
         JPanel infoPanel = createInfoPanel(auto);
-        
-        // Add status message panel
+
         statusMessage = new JLabel("L'automobile è accesa!");
         statusMessage.setFont(new Font("Arial", Font.ITALIC, 12));
         statusMessage.setHorizontalAlignment(SwingConstants.CENTER);
         statusMessage.setForeground(DARK_GREEN);
-        
-        // Add panels to frame
+
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.add(controlPanel, BorderLayout.EAST);
         frame.add(infoPanel, BorderLayout.NORTH);
         frame.add(statusMessage, BorderLayout.SOUTH);
-        
-        // Add padding around panels
+
         ((JComponent) frame.getContentPane()).setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
+
         frame.setVisible(true);
-        frame.setLocationRelativeTo(null); // Center on screen
+        frame.setLocationRelativeTo(null);
         frame.setFocusable(true);
         frame.requestFocus();
 
-        // Add keyboard listener
         addKeyboardListener(frame, auto, isAutomatica);
     }
-    
+
     private static JPanel createSpeedPanel(Auto auto) {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(createTitledBorder("Indicatori di Marcia"));
-        
-        // Speed indicator
+
         JLabel speedLabel = new JLabel("0");
         speedLabel.setFont(new Font("Digital-7", Font.BOLD, 90));
         speedLabel.setHorizontalAlignment(SwingConstants.CENTER);
         speedLabel.setForeground(new Color(30, 30, 30));
-        
+
         JLabel kmhLabel = new JLabel("km/h");
         kmhLabel.setFont(new Font("Arial", Font.BOLD, 16));
         kmhLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        // Speedometer progress bar
+
         speedometer = new JProgressBar(0, auto.getMaxSpeed());
         speedometer.setValue(0);
         speedometer.setStringPainted(false);
         speedometer.setForeground(new Color(50, 150, 220));
-        
-        // Gear indicator
+
         JLabel gearLabel = new JLabel("N");
         gearLabel.setFont(new Font("Digital-7", Font.BOLD, 70));
         gearLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -110,35 +96,30 @@ public class MainGUI {
         gearLabel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
                 BorderFactory.createEmptyBorder(5, 15, 5, 15)));
-        
-        // Speed panel layout
+
         JPanel speedPanel = new JPanel(new BorderLayout());
         speedPanel.add(speedLabel, BorderLayout.CENTER);
         speedPanel.add(kmhLabel, BorderLayout.SOUTH);
-        
-        // Add to main panel
+
         panel.add(speedPanel, BorderLayout.CENTER);
-        
-        // Gear panel with label
+
         JPanel gearPanel = new JPanel(new BorderLayout());
         JLabel gearTitleLabel = new JLabel("Marcia");
         gearTitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         gearTitleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        
+
         gearPanel.add(gearTitleLabel, BorderLayout.NORTH);
         gearPanel.add(gearLabel, BorderLayout.CENTER);
         gearPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
-        
+
         panel.add(gearPanel, BorderLayout.EAST);
         panel.add(speedometer, BorderLayout.SOUTH);
-        
-        // Update references for key listener
+
         Timer guiUpdateTimer = new Timer(100, e -> {
             int speed = auto.getVelocita();
             speedLabel.setText(df.format(speed));
             speedometer.setValue(speed);
-            
-            // Change color based on speed range
+
             if (speed > auto.getMaxSpeed() * 0.8) {
                 speedLabel.setForeground(DARK_RED);
             } else if (speed > auto.getMaxSpeed() * 0.6) {
@@ -146,35 +127,32 @@ public class MainGUI {
             } else {
                 speedLabel.setForeground(new Color(30, 30, 30));
             }
-            
-            // Update gear display
+
             String marciaText = marciaToString(auto.getMarcia());
             gearLabel.setText(marciaText);
         });
         guiUpdateTimer.start();
-        
+
         return panel;
     }
-    
+
     private static JPanel createControlPanel(boolean isAutomatica) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(createTitledBorder("Comandi"));
-        
-        // Control instructions
+
         JLabel acceleraLabel = new JLabel("W - Accelera");
         JLabel frenaLabel = new JLabel("S - Frena");
-        
+
         panel.add(Box.createVerticalStrut(10));
         panel.add(acceleraLabel);
         panel.add(Box.createVerticalStrut(10));
         panel.add(frenaLabel);
-        
-        // Add manual transmission controls if needed
+
         if (!isAutomatica) {
             JLabel marciaUpLabel = new JLabel("E - Marcia su");
             JLabel marciaDownLabel = new JLabel("Q - Marcia giù");
-            
+
             panel.add(Box.createVerticalStrut(20));
             panel.add(marciaUpLabel);
             panel.add(Box.createVerticalStrut(10));
@@ -185,27 +163,26 @@ public class MainGUI {
             panel.add(Box.createVerticalStrut(20));
             panel.add(autoLabel);
         }
-        
+
         panel.add(Box.createVerticalGlue());
         return panel;
     }
-    
+
     private static JPanel createInfoPanel(Auto auto) {
         JPanel panel = new JPanel(new GridLayout(1, 3, 10, 0));
         panel.setBorder(createTitledBorder("Informazioni Veicolo"));
-        
-        // Car information
+
         JLabel brandLabel = new JLabel("Marca: " + auto.marca);
         JLabel modelLabel = new JLabel("Modello: " + auto.modello);
         JLabel maxSpeedLabel = new JLabel("Velocità Max: " + auto.getMaxSpeed() + " km/h");
-        
+
         panel.add(brandLabel);
         panel.add(modelLabel);
         panel.add(maxSpeedLabel);
-        
+
         return panel;
     }
-    
+
     private static TitledBorder createTitledBorder(String title) {
         return BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY),
@@ -215,7 +192,7 @@ public class MainGUI {
                 new Font("Arial", Font.BOLD, 12),
                 Color.DARK_GRAY);
     }
-    
+
     private static void addKeyboardListener(JFrame frame, Auto auto, boolean isAutomatica) {
         frame.addKeyListener(new KeyAdapter() {
             @Override
@@ -228,7 +205,6 @@ public class MainGUI {
 
                     timerW = new Timer(100, ev -> {
                         int result = auto.accelleraAuto();
-                        // Update status message if acceleration failed
                         if (result == auto.getVelocita()) {
                             if (auto.getVelocita() >= auto.getMaxSpeed()) {
                                 updateStatus("Velocità massima raggiunta!", DARK_RED);
@@ -287,7 +263,7 @@ public class MainGUI {
     }
 
     private static void handleKeyRelease(KeyEvent e, Auto auto) {
-        if (e.getKeyChar() == 'w') {
+        if (e.getKeyChar() == 'w' ) {
             keyPressedW = false;
             if (timerW != null) timerW.stop();
             updateStatus("Rilasciato acceleratore", Color.GRAY);
@@ -316,7 +292,7 @@ public class MainGUI {
         noKeyTimer.setRepeats(true);
         noKeyTimer.start();
     }
-    
+
     private static void updateStatus(String message, Color color) {
         statusMessage.setText(message);
         statusMessage.setForeground(color);
@@ -333,9 +309,8 @@ public class MainGUI {
         JTextField colorField = new JTextField("", 15);
         JButton confirmButton = new JButton("Conferma");
         confirmButton.setBackground(new Color(100, 180, 100));
-        confirmButton.setForeground(Color.WHITE);
+        confirmButton.setForeground(Color.GRAY);
 
-        // Style labels
         JLabel brandLabel = new JLabel("Marca:");
         JLabel modelLabel = new JLabel("Modello:");
         JLabel colorLabel = new JLabel("Colore:");
@@ -354,14 +329,12 @@ public class MainGUI {
         info.add(confirmButton);
 
         final String[] carInfo = new String[3];
-        
-        // Pre-populate with suggestions
+
         brandField.setText("Audi");
         modelField.setText("A4");
         colorField.setText("Nero");
-        
+
         confirmButton.addActionListener(e -> {
-            // Validate input
             if (brandField.getText().trim().isEmpty() || 
                 modelField.getText().trim().isEmpty() || 
                 colorField.getText().trim().isEmpty()) {
@@ -371,60 +344,55 @@ public class MainGUI {
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             carInfo[0] = brandField.getText();
             carInfo[1] = modelField.getText();
             carInfo[2] = colorField.getText();
             info.dispose();
         });
-        
+
         info.setLocationRelativeTo(null);
         info.setVisible(true);
         return carInfo;
     }
 
     private static boolean scegliTipoCambio() {
-        // Create custom buttons
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         JButton manualeButton = new JButton("Manuale");
         JButton automaticoButton = new JButton("Automatico");
-        
+
         manualeButton.setBackground(new Color(200, 200, 200));
         automaticoButton.setBackground(new Color(180, 220, 180));
-        
+
         buttonPanel.add(manualeButton);
         buttonPanel.add(automaticoButton);
-        
-        // Dialog content
+
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         JLabel questionLabel = new JLabel("Che tipo di cambio vuoi usare?");
         questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
         questionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         panel.add(questionLabel, BorderLayout.NORTH);
         panel.add(buttonPanel, BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        // Create dialog
+
         JDialog dialog = new JDialog((JFrame) null, "Tipo di Cambio", true);
         dialog.setSize(400, 200);
         dialog.add(panel);
         dialog.setLocationRelativeTo(null);
-        
-        // Result holder
-        final boolean[] result = {false}; // Default: manuale
-        
-        // Button actions
+
+        final boolean[] result = {false};
+
         manualeButton.addActionListener(e -> {
             result[0] = false;
             dialog.dispose();
         });
-        
+
         automaticoButton.addActionListener(e -> {
             result[0] = true;
             dialog.dispose();
         });
-        
+
         dialog.setVisible(true);
         return result[0];
     }
@@ -433,29 +401,30 @@ public class MainGUI {
         JDialog avvia = new JDialog((JFrame) null, "Avvia Automobile", true);
         avvia.setSize(350, 200);
         avvia.setLayout(new BorderLayout());
-        
-        // Create animated icon (simplified)
-        JLabel iconLabel = new JLabel(new ImageIcon("car_icon.png"));
-        if (iconLabel.getIcon() == null) {
-            // Fallback if image not found
+
+        JLabel iconLabel = new JLabel();
+        ImageIcon carIcon = new ImageIcon(MainGUI.class.getResource("/car_icon.png"));
+        if (carIcon.getIconWidth() > 0) {
+            iconLabel.setIcon(carIcon);
+        } else {
             iconLabel.setText("🚗");
             iconLabel.setFont(new Font("Arial", Font.PLAIN, 48));
             iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         }
-        
+
         JButton startButton = new JButton("Accendi il Motore");
         startButton.setFont(new Font("Arial", Font.BOLD, 16));
         startButton.setBackground(new Color(80, 160, 80));
-        startButton.setForeground(Color.WHITE);
+        startButton.setForeground(Color.GRAY);
         startButton.setFocusPainted(false);
-        
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
         buttonPanel.add(startButton);
-        
+
         avvia.add(iconLabel, BorderLayout.CENTER);
         avvia.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         final boolean[] result = {false};
 
         startButton.addActionListener(e -> {
