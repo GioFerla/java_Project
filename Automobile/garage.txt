@@ -1,0 +1,7 @@
+Audi;A4;Nero;AUTOMATICA
+lall;A4;Nero;MANUALE
+Audi;A4;Nero;AUTOMATICA
+Audi;A4;Nero;AUTOMATICA
+lall;A4;Nero;AUTOMATICA
+Audi;A4;Nero;MANUALE
+Audi;A4;Nero;MANUALE

@@ -1,12 +1,12 @@
 public abstract class Auto {
-    protected String modello;
-    protected String colore;
-    protected String marca;
-    protected boolean motore;
-    protected int velocita;
-    protected int[] sogliaMarcia;
-    protected int marcia;
-    protected int maxSpeed;
+    private String modello;
+    private String colore;
+    private String marca;
+    private boolean motore;
+    private int velocita;
+    private int[] sogliaMarcia;
+    private int marcia;
+    private int maxSpeed;
     
     public Auto(String modello, String colore, String marca) {
         this.modello = modello;
@@ -62,6 +62,18 @@ public abstract class Auto {
         return false;
     }
     
+    public String getModello() {
+        return modello;
+    }
+    
+    public String getColore() {
+        return colore;
+    }
+    
+    public String getMarca() {
+        return marca;
+    }
+    
     public boolean getStatoMotore() {
         return motore;
     }
@@ -70,12 +82,48 @@ public abstract class Auto {
         return velocita;
     }
     
+    public int[] getSogliaMarcia() {
+        return sogliaMarcia;
+    }
+    
     public int getMarcia() {
         return marcia;
     }
     
     public int getMaxSpeed() {
         return maxSpeed;
+    }
+    
+    public void setModello(String modello) {
+        this.modello = modello;
+    }
+    
+    public void setColore(String colore) {
+        this.colore = colore;
+    }
+    
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+    
+    public void setMotore(boolean motore) {
+        this.motore = motore;
+    }
+    
+    public void setVelocita(int velocita) {
+        this.velocita = velocita;
+    }
+    
+    public void setSogliaMarcia(int[] sogliaMarcia) {
+        this.sogliaMarcia = sogliaMarcia;
+    }
+    
+    public void setMarcia(int marcia) {
+        this.marcia = marcia;
+    }
+    
+    public void setMaxSpeed(int maxSpeed) {
+        this.maxSpeed = maxSpeed;
     }
     
     public abstract int accelleraAuto();

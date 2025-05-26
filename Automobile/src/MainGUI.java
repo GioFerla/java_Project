@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
+import java.io.*;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
@@ -14,14 +15,18 @@ public class MainGUI {
     private static JLabel statusMessage;
     private static final Color DARK_GREEN = new Color(0, 120, 0);
     private static final Color DARK_RED = new Color(150, 0, 0);
-    private static final DecimalFormat df = new DecimalFormat("0");
+    
+    private static final ArrayList<Auto> automobili = new ArrayList<>();
+    private static final String GARAGE_FILE = "garage.txt";
 
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            System.err.println("Errore nell'impostazione del Look and Feel: " + e.getMessage());
         }
+
+        caricaGarage();
 
         String[] autoInfo = autoInfo(); 
         boolean isAutomatica = scegliTipoCambio();
@@ -32,6 +37,11 @@ public class MainGUI {
         } else {
             auto = new AutoManuale(autoInfo[1], autoInfo[2], autoInfo[0]);
         }
+        
+        automobili.add(auto);
+        System.out.println("Auto aggiunta al garage. Totale auto: " + automobili.size());
+        
+        salvaGarage();
 
         if (avviaAuto()) {
             if (auto.accensioneMotore()) {
@@ -41,7 +51,7 @@ public class MainGUI {
     }
 
     private static void createGUI(Auto auto, boolean isAutomatica) {
-        JFrame frame = new JFrame("Simulatore Automobile - " + auto.modello);
+        JFrame frame = new JFrame("Simulatore Automobile - " + auto.getModello());
         frame.setSize(600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
@@ -115,9 +125,9 @@ public class MainGUI {
         panel.add(gearPanel, BorderLayout.EAST);
         panel.add(speedometer, BorderLayout.SOUTH);
 
-        Timer guiUpdateTimer = new Timer(100, e -> {
+        Timer guiUpdateTimer = new Timer(100, _ -> {
             int speed = auto.getVelocita();
-            speedLabel.setText(df.format(speed));
+            speedLabel.setText(String.valueOf(speed));
             speedometer.setValue(speed);
 
             if (speed > auto.getMaxSpeed() * 0.8) {
@@ -169,16 +179,19 @@ public class MainGUI {
     }
 
     private static JPanel createInfoPanel(Auto auto) {
-        JPanel panel = new JPanel(new GridLayout(1, 3, 10, 0));
+        JPanel panel = new JPanel(new GridLayout(1, 4, 10, 0));
         panel.setBorder(createTitledBorder("Informazioni Veicolo"));
 
-        JLabel brandLabel = new JLabel("Marca: " + auto.marca);
-        JLabel modelLabel = new JLabel("Modello: " + auto.modello);
+        JLabel brandLabel = new JLabel("Marca: " + auto.getMarca());
+        JLabel modelLabel = new JLabel("Modello: " + auto.getModello());
         JLabel maxSpeedLabel = new JLabel("Velocità Max: " + auto.getMaxSpeed() + " km/h");
+        JLabel garageLabel = new JLabel("Auto nel garage: " + automobili.size());
+        garageLabel.setFont(new Font("Arial", Font.BOLD, 12));
 
         panel.add(brandLabel);
         panel.add(modelLabel);
         panel.add(maxSpeedLabel);
+        panel.add(garageLabel);
 
         return panel;
     }
@@ -203,7 +216,7 @@ public class MainGUI {
                     keyPressedW = true;
                     if (noKeyTimer != null) noKeyTimer.stop();
 
-                    timerW = new Timer(100, ev -> {
+                    timerW = new Timer(100, _ -> {
                         int result = auto.accelleraAuto();
                         if (result == auto.getVelocita()) {
                             if (auto.getVelocita() >= auto.getMaxSpeed()) {
@@ -221,7 +234,7 @@ public class MainGUI {
                     keyPressedS = true;
                     if (noKeyTimer != null) noKeyTimer.stop();
 
-                    timerS = new Timer(100, ev -> {
+                    timerS = new Timer(100, _ -> {
                         int result = auto.deceleraAuto();
                         if (result == 777) {
                             updateStatus("Velocità troppo bassa per la marcia attuale!", DARK_RED);
@@ -282,7 +295,7 @@ public class MainGUI {
         if (noKeyTimer != null && noKeyTimer.isRunning()) {
             noKeyTimer.stop();
         }
-        noKeyTimer = new Timer(900, event -> {
+        noKeyTimer = new Timer(900, _ -> {
             auto.deceleraAuto();
             if (auto.getVelocita() <= 0) {
                 noKeyTimer.stop();
@@ -299,62 +312,96 @@ public class MainGUI {
     }
 
     private static String[] autoInfo() {
-        JDialog info = new JDialog((JFrame) null, "Inserisci informazioni automobile", true);
-        info.setSize(500, 300);
-        info.setLayout(new GridLayout(4, 2, 10, 10));
-        ((JComponent) info.getContentPane()).setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        ArrayList<String[]> autoSalvate = new ArrayList<>();
 
-        JTextField brandField = new JTextField("", 15);
-        JTextField modelField = new JTextField("", 15);
-        JTextField colorField = new JTextField("", 15);
+        File file = new File(GARAGE_FILE);
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String linea;
+                while ((linea = reader.readLine()) != null) {
+                    String[] parts = linea.split(";");
+                    if (parts.length >= 3) {
+                        autoSalvate.add(parts);
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Errore nella lettura del garage: " + e.getMessage());
+            }
+        }
+
+        JDialog dialog = new JDialog((JFrame) null, "Informazioni Automobile", true);
+        dialog.setSize(500, 400);
+        dialog.setLayout(new GridLayout(6, 2, 10, 10));
+        ((JComponent) dialog.getContentPane()).setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel existingLabel = new JLabel("Auto nel Garage:");
+        JComboBox<String> comboGarage = new JComboBox<>();
+        comboGarage.addItem("— Nessuna selezione —");
+
+        for (String[] auto : autoSalvate) {
+            comboGarage.addItem(auto[0] + " " + auto[1] + " (" + auto[2] + ")");
+        }
+
+        String[] marche = {"Audi", "BMW", "Mercedes", "Volkswagen", "Ford", "Toyota", "Honda", "Fiat", "Ferrari", "Lamborghini"};
+        JComboBox<String> brandComboBox = new JComboBox<>(marche);
+        brandComboBox.setEditable(true);
+
+        JTextField modelField = new JTextField("A4");
+        JTextField colorField = new JTextField("Nero");
+
         JButton confirmButton = new JButton("Conferma");
-        confirmButton.setBackground(new Color(100, 180, 100));
-        confirmButton.setForeground(Color.GRAY);
 
         JLabel brandLabel = new JLabel("Marca:");
         JLabel modelLabel = new JLabel("Modello:");
         JLabel colorLabel = new JLabel("Colore:");
-        Font labelFont = new Font("Arial", Font.BOLD, 14);
-        brandLabel.setFont(labelFont);
-        modelLabel.setFont(labelFont);
-        colorLabel.setFont(labelFont);
 
-        info.add(brandLabel);
-        info.add(brandField);
-        info.add(modelLabel);
-        info.add(modelField);
-        info.add(colorLabel);
-        info.add(colorField);
-        info.add(new JLabel());
-        info.add(confirmButton);
+        dialog.add(existingLabel);
+        dialog.add(comboGarage);
+        dialog.add(brandLabel);
+        dialog.add(brandComboBox);
+        dialog.add(modelLabel);
+        dialog.add(modelField);
+        dialog.add(colorLabel);
+        dialog.add(colorField);
+        dialog.add(new JLabel());
+        dialog.add(confirmButton);
 
         final String[] carInfo = new String[3];
 
-        brandField.setText("Audi");
-        modelField.setText("A4");
-        colorField.setText("Nero");
+        comboGarage.addActionListener(e -> {
+            int index = comboGarage.getSelectedIndex();
+            if (index > 0) {
+                String[] selected = autoSalvate.get(index - 1);
+                brandComboBox.setSelectedItem(selected[0]);
+                modelField.setText(selected[1]);
+                colorField.setText(selected[2]);
+            }
+        });
 
-        confirmButton.addActionListener(e -> {
-            if (brandField.getText().trim().isEmpty() || 
-                modelField.getText().trim().isEmpty() || 
-                colorField.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(info, 
-                    "Tutti i campi sono obbligatori!", 
-                    "Errore", 
+        confirmButton.addActionListener(_ -> {
+            String brand = (String) brandComboBox.getSelectedItem();
+            String model = modelField.getText();
+            String color = colorField.getText();
+
+            if (brand == null || brand.trim().isEmpty() || model.trim().isEmpty() || color.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                    "Tutti i campi sono obbligatori!",
+                    "Errore",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            carInfo[0] = brandField.getText();
-            carInfo[1] = modelField.getText();
-            carInfo[2] = colorField.getText();
-            info.dispose();
+            carInfo[0] = brand.trim();
+            carInfo[1] = model.trim();
+            carInfo[2] = color.trim();
+            dialog.dispose();
         });
 
-        info.setLocationRelativeTo(null);
-        info.setVisible(true);
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
         return carInfo;
     }
+
 
     private static boolean scegliTipoCambio() {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
@@ -383,12 +430,12 @@ public class MainGUI {
 
         final boolean[] result = {false};
 
-        manualeButton.addActionListener(e -> {
+        manualeButton.addActionListener(_ -> {
             result[0] = false;
             dialog.dispose();
         });
 
-        automaticoButton.addActionListener(e -> {
+        automaticoButton.addActionListener(_ -> {
             result[0] = true;
             dialog.dispose();
         });
@@ -427,7 +474,7 @@ public class MainGUI {
 
         final boolean[] result = {false};
 
-        startButton.addActionListener(e -> {
+        startButton.addActionListener(_ -> {
             result[0] = true;
             avvia.dispose();
         });
@@ -439,5 +486,102 @@ public class MainGUI {
 
     private static String marciaToString(int marcia) {
         return marcia == 0 ? "N" : String.valueOf(marcia);
+    }
+    
+    public static int getNumeroAuto() {
+        return automobili.size();
+    }
+    
+    public static ArrayList<Auto> getAutomobili() {
+        return new ArrayList<>(automobili);
+    }
+    
+    public static boolean rimuoviAuto(int indice) {
+        if (indice >= 0 && indice < automobili.size()) {
+            automobili.remove(indice);
+            salvaGarage();
+            return true;
+        }
+        return false;
+    }
+    
+    public static void salvaGarage() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(GARAGE_FILE))) {
+            for (Auto auto : automobili) {
+                if (auto != null) {
+                    String tipo = (auto instanceof AutoAutomatica) ? "AUTOMATICA" : "MANUALE";
+                    writer.println(auto.getMarca() + ";" + auto.getModello() + ";" + auto.getColore() + ";" + tipo);
+                }
+            }
+            System.out.println("Garage salvato in " + GARAGE_FILE);
+        } catch (IOException e) {
+            System.err.println("Errore nel salvataggio del garage: " + e.getMessage());
+        }
+    }
+    
+    public static void caricaGarage() {
+        File file = new File(GARAGE_FILE);
+        if (!file.exists()) {
+            System.out.println("File garage non trovato. Iniziando con garage vuoto.");
+            return;
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(GARAGE_FILE))) {
+            String line;
+            int autoCaricate = 0;
+            
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length == 4) {
+                    String marca = parts[0];
+                    String modello = parts[1];
+                    String colore = parts[2];
+                    String tipo = parts[3];
+                    
+                    Auto auto;
+                    if ("AUTOMATICA".equals(tipo)) {
+                        auto = new AutoAutomatica(modello, colore, marca);
+                    } else {
+                        auto = new AutoManuale(modello, colore, marca);
+                    }
+                    
+                    automobili.add(auto);
+                    autoCaricate++;
+                }
+            }
+            
+            System.out.println("Caricate " + autoCaricate + " auto dal garage salvato.");
+            
+        } catch (IOException e) {
+            System.err.println("Errore nel caricamento del garage: " + e.getMessage());
+        }
+    }
+    
+    public static void pulisciGarage() {
+        automobili.clear();
+        salvaGarage();
+        System.out.println("Garage pulito!");
+    }
+    
+    public static void esportaGarage(String nomeFile) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(nomeFile))) {
+            writer.println("=== GARAGE AUTOMOBILI ===");
+            writer.println("Data: " + new java.util.Date());
+            writer.println("Totale auto: " + automobili.size());
+            writer.println();
+            
+            for (int i = 0; i < automobili.size(); i++) {
+                Auto auto = automobili.get(i);
+                if (auto != null) {
+                    String tipo = (auto instanceof AutoAutomatica) ? "Automatica" : "Manuale";
+                    writer.println((i+1) + ". " + auto.getMarca() + " " + auto.getModello() + 
+                                 " - Colore: " + auto.getColore() + " - Cambio: " + tipo);
+                }
+            }
+            
+            System.out.println("Garage esportato in " + nomeFile);
+        } catch (IOException e) {
+            System.err.println("Errore nell'esportazione: " + e.getMessage());
+        }
     }
 }

@@ -5,65 +5,63 @@ public class AutoManuale extends Auto {
     
     public int cambioMarcia(boolean up) {
         if (up) {
-            if (marcia >= 0 && marcia < 5) {
-                marcia++;
-                System.out.println("Passato alla marcia: " + marcia);
-                return marcia;
+            if (getMarcia() >= 0 && getMarcia() < 5) {
+                setMarcia(getMarcia() + 1);
+                System.out.println("Passato alla marcia: " + getMarcia());
+                return getMarcia();
             }
         } else {
-            if (marcia > 0 && marcia <= 5) {
-                marcia--;
-                String marciaText = marcia == 0 ? "N" : String.valueOf(marcia);
+            if (getMarcia() > 0 && getMarcia() <= 5) {
+                setMarcia(getMarcia() - 1);
+                String marciaText = getMarcia() == 0 ? "N" : String.valueOf(getMarcia());
                 System.out.println("Passato alla marcia: " + marciaText);
-                return marcia;
+                return getMarcia();
             }
         }
         return 404;
     }
     
-    
     @Override
     public int accelleraAuto() {
-        if (!motore) {
+        if (!getStatoMotore()) {
             System.out.println("L'auto è spenta. Accendere il motore prima di accelerare.");
-            return velocita;
+            return getVelocita();
         }
         
-        if (marcia == 0) {
+        if (getMarcia() == 0) {
             System.out.println("Seleziona una marcia per iniziare.");
-            return velocita;
+            return getVelocita();
         }
         
-        int maxVelocitaMarcia = sogliaMarcia[marcia * 2 - 1];
+        int maxVelocitaMarcia = getSogliaMarcia()[getMarcia() * 2 - 1];
+        int limiteEffettivo = Math.min(maxVelocitaMarcia, getMaxSpeed());
         
-        int limiteEffettivo = Math.min(maxVelocitaMarcia, maxSpeed);
-        
-        if (velocita < limiteEffettivo) {
-            velocita++;
-            return velocita;
+        if (getVelocita() < limiteEffettivo) {
+            setVelocita(getVelocita() + 1);
+            return getVelocita();
         } else {
-            System.out.println("Hai raggiunto la velocità massima per la marcia " + marcia + ". Cambia marcia per accelerare ulteriormente.");
-            return velocita;
+            System.out.println("Hai raggiunto la velocità massima per la marcia " + getMarcia() + ". Cambia marcia per accelerare ulteriormente.");
+            return getVelocita();
         }
     }
     
     @Override
     public int deceleraAuto() {
-        if (velocita > 0) {
-            if (marcia > 0) {
-                int minVelocitaMarcia = sogliaMarcia[(marcia - 1) * 2];
+        if (getVelocita() > 0) {
+            if (getMarcia() > 0) {
+                int minVelocitaMarcia = getSogliaMarcia()[(getMarcia() - 1) * 2];
                 
-                if (velocita <= minVelocitaMarcia) {
+                if (getVelocita() <= minVelocitaMarcia) {
                     System.out.println("Velocità troppo bassa per la marcia attuale. L'auto si spegnerà se non cambi marcia.");
                     return 777;
                 }
             }
             
-            velocita--;
-            return velocita;
+            setVelocita(getVelocita() - 1);
+            return getVelocita();
         } else {
             System.out.println("L'auto è ferma.");
-            return velocita;
+            return getVelocita();
         }
     }
 }

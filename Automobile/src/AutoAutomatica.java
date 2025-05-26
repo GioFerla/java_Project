@@ -4,51 +4,51 @@ public class AutoAutomatica extends Auto {
     }
     
     private void controlloMarciaAutomatico() {
-        if (velocita == 0) {
-            marcia = 0;
-        } else if (velocita >= sogliaMarcia[0] && velocita <= sogliaMarcia[1]) {
-            marcia = 1;
-        } else if (velocita >= sogliaMarcia[2] && velocita <= sogliaMarcia[3]) {
-            marcia = 2;
-        } else if (velocita >= sogliaMarcia[4] && velocita <= sogliaMarcia[5]) {
-            marcia = 3;
-        } else if (velocita >= sogliaMarcia[6] && velocita <= sogliaMarcia[7]) {
-            marcia = 4;
-        } else if (velocita >= sogliaMarcia[8] && velocita <= sogliaMarcia[9]) {
-            marcia = 5;
+        if (getVelocita() == 0) {
+            setMarcia(0);
+        } else if (getVelocita() >= getSogliaMarcia()[0] && getVelocita() <= getSogliaMarcia()[1]) {
+            setMarcia(1);
+        } else if (getVelocita() >= getSogliaMarcia()[2] && getVelocita() <= getSogliaMarcia()[3]) {
+            setMarcia(2);
+        } else if (getVelocita() >= getSogliaMarcia()[4] && getVelocita() <= getSogliaMarcia()[5]) {
+            setMarcia(3);
+        } else if (getVelocita() >= getSogliaMarcia()[6] && getVelocita() <= getSogliaMarcia()[7]) {
+            setMarcia(4);
+        } else if (getVelocita() >= getSogliaMarcia()[8] && getVelocita() <= getSogliaMarcia()[9]) {
+            setMarcia(5);
         }
     }
     
     @Override
     public int accelleraAuto() {
-        if (!motore) {
+        if (!getStatoMotore()) {
             System.out.println("L'auto è spenta. Accendere il motore prima di accelerare.");
-            return velocita;
+            return getVelocita();
         }
         
-        if (marcia == 0 && velocita == 0) {
-            marcia = 1;
+        if (getMarcia() == 0 && getVelocita() == 0) {
+            setMarcia(1);
         }
         
-        if (velocita < maxSpeed) {
-            velocita++;
+        if (getVelocita() < getMaxSpeed()) {
+            setVelocita(getVelocita() + 1);
             controlloMarciaAutomatico();
-            return velocita;
+            return getVelocita();
         } else {
             System.out.println("Hai raggiunto la velocità massima per questo veicolo.");
-            return velocita;
+            return getVelocita();
         }
     }
     
     @Override
     public int deceleraAuto() {
-        if (velocita > 0) {
-            velocita--;
+        if (getVelocita() > 0) {
+            setVelocita(getVelocita() - 1);
             controlloMarciaAutomatico();
-            return velocita;
+            return getVelocita();
         } else {
             System.out.println("L'auto è ferma.");
-            return velocita;
+            return getVelocita();
         }
     }
 }
